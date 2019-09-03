@@ -1,0 +1,40 @@
+<html>
+    <head>
+        <title>Burt's Books – Book Detail</title>
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <script src="{{ static_url('inventory.js') }}"
+            type="application/javascript"></script>
+    </head>
+
+    <body>
+        <div>
+            <h1>Lora's Server</h1>
+
+            <hr/>
+            <p><h2>59设备{{ date }}上传数据：温度：{{ temperature }}, 湿度：{{ humidity }}</h2>
+            <em>设备2e上传数据：{{ data2 }}</em></p>
+        </div>
+
+<!--        <img src="{{ static_url('1.jpg') }}" alt="The Definitive Guide to the Internet" />-->
+
+        <hr />
+<!--        <form method="post" action="/mqtt">-->
+<!--              {% module xsrf_form_html() %}-->
+<!--            <p>发送文本(后台自动转码)：<br><input type="text" name="send_data"></p>-->
+<!--            <p><input type="submit" value="下发lora设备"  /></p>-->
+<!--        </form>-->
+
+        <div id="add-to-cart">
+            <p>
+<!--            <form>-->
+            发送文本(后台自动转码)：<input type="text" id="send_data">
+<!--        </form>-->
+            </p>
+            <p><input type="submit" value="下发lora2e设备" id="add-button" /></p>
+        </div>
+<!--        <div id="remove-from-cart" style="display: none;">-->
+<!--            <p><span style="color: green;">One copy is in your cart.</span></p>-->
+<!--            <p><input type="submit" value="Remove from Cart" id="remove-button" /></p>-->
+<!--        </div>-->
+    </body>
+</html>
