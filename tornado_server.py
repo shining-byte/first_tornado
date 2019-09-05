@@ -139,7 +139,9 @@ class TcpHandler(TCPServer):
         # except iostream.StreamClosedError:
         except Exception as e:
             print(e)
-            pass
+            FLAG = False
+
+            # pass
 
 
 async def heartbeat():
