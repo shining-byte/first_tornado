@@ -21,23 +21,25 @@ from tornado_model import User, WifiDevice, LoraDevice
 
 
 class SendDataToWifi(web.RequestHandler):
-    async def get(self, input):
-        global TCP_CONNECTION
-        print(TCP_CONNECTION)
-        await TCP_CONNECTION[input].write(bytes(input, encoding='utf-8'))
-        self.write('success')
+    async def post(self):
+        send_data = self.get_argument('send_data')
+        send_data = eval(send_data)
+        if isinstance(send_data, dict):
+            global TCP_CONNECTION
+            if send_data['device_name'] in TCP_CONNECTION.keys():
+                await TCP_CONNECTION[send_data['device_name']].write(bytes(str(send_data), encoding='utf-8'))
+                return_data = {'status': 200, 'message': 'success'}
+                self.write(json.dumps(return_data))
+            else:
+                return_data = {'status': 500, 'message': 'failure, 设备TCP未连接'}
+                self.write(json.dumps(return_data))
+        else:
+            return_data = {'status': 500, 'message': 'failure, 命令有误'}
+            self.write(json.dumps(return_data))
 
 
 class IndexHandler(web.RequestHandler):
     async def get(self):
-        # session = await uuid4()
-        # try:
-        # global DATA
-        # if isinstance(DATA, bytes):
-        #
-        #     obj = await self.application.objects.get(LoraDevice, device_name='3634374710300059')
-        #     del DATA
-        # else:
         obj = await self.application.objects.get(LoraDevice, device_name='3634374710300059')
         await self.render("index.html", temperature=obj.data[0:5],
                           data2=DATA2, humidity=obj.data[5:10], date=obj.date)
@@ -61,6 +63,7 @@ class Mqtt(Client):
     def on_message(self, client, userdata, msg):
         global DATA
         DATA = json.loads(msg.payload)
+        print(DATA)
         if isinstance(DATA, dict):
             DATA = base64.b64decode(DATA['data'])
 
@@ -121,17 +124,17 @@ class TcpHandler(TCPServer):
     async def handle_stream(self, stream, address):
         global FLAG
         try:
-            print('tcp_server连接')
             while True:
                 msg = await stream.read_bytes(1024, partial=True)
                 FLAG = True
-                print(msg, 'from', address)
-                msg = msg.decode('utf-8')
-
-                TCP_CONNECTION[msg[0:4]] = stream
-                if msg == 'over':
-                    stream.close()
-        except iostream.StreamClosedError:
+                # print(msg, 'from', address)
+                msg = eval(msg.decode('utf-8'))
+                TCP_CONNECTION[msg['device_name']] = stream
+                # if msg == 'over':
+                #     stream.close()
+        # except iostream.StreamClosedError:
+        except Exception as e:
+            print(e)
             pass
 
 
@@ -190,7 +193,7 @@ settings = {'debug': True, 'template_path': 'templates', 'static_path': "static"
 AsyncIOMainLoop().install()
 app = web.Application(
     handlers=[
-        (r"/send/(\w+)", SendDataToWifi),
+        (r"/wifi", SendDataToWifi),
         (r"/mqtt", GetMqttData),
         # (r"/api/users/", GetAllUserHandler),
         (r"/user", GetUserHandler),
@@ -224,7 +227,7 @@ if __name__ == "__main__":
     # client3.connect('127.0.0.1', 1883, 60)
 
     # 下发2e数据
-    # PeriodicCallback(functools.partial(send_mqtt, '11223344'), callback_time=3000).start()
+    # PeriodicCallback(functools.partial(send_mqtt, '11223344'), callback_time=1000).start()
 
     # 定时保存59设备数据,
     PeriodicCallback(functools.partial(save_mqtt_data), callback_time=300000).start()
