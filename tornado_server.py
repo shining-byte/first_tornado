@@ -23,19 +23,23 @@ from tornado_model import User, WifiDevice, LoraDevice
 class SendDataToWifi(web.RequestHandler):
     async def post(self):
         send_data = self.get_argument('send_data')
-        send_data = eval(send_data)
-        if isinstance(send_data, dict):
-            global TCP_CONNECTION
-            if send_data['device_name'] in TCP_CONNECTION.keys():
-                await TCP_CONNECTION[send_data['device_name']].write(bytes(str(send_data), encoding='utf-8'))
-                return_data = {'status': 200, 'message': 'success'}
-                self.write(json.dumps(return_data))
+        try:
+            send_data = eval(send_data)
+            if isinstance(send_data, dict):
+                global TCP_CONNECTION
+                if send_data['device_name'] in TCP_CONNECTION.keys():
+                    await TCP_CONNECTION[send_data['device_name']].write(bytes(str(send_data), encoding='utf-8'))
+                    return_data = {'status': 200, 'message': 'success'}
+                    self.write(json.dumps(return_data))
+                else:
+                    return_data = {'status': 500, 'message': 'failure, 设备TCP未连接'}
+                    self.write(json.dumps(return_data))
             else:
-                return_data = {'status': 500, 'message': 'failure, 设备TCP未连接'}
+                return_data = {'status': 500, 'message': 'failure, 命令有误'}
                 self.write(json.dumps(return_data))
-        else:
-            return_data = {'status': 500, 'message': 'failure, 命令有误'}
-            self.write(json.dumps(return_data))
+        except Exception as e:
+            return_data = {'status': 500, 'message': 'failure, track:{}'.format(e)}
+            self.write(return_data)
 
 
 class IndexHandler(web.RequestHandler):
