@@ -6,10 +6,13 @@ import json
 import struct
 from datetime import datetime
 import functools
+import re
+
 from uuid import uuid4
 
 from tornado.ioloop import IOLoop, PeriodicCallback
 from tornado import gen, web, iostream, httpserver
+from tornado.iostream import StreamClosedError
 from tornado.tcpserver import TCPServer
 from tornado.options import define, options
 from tornado.platform.asyncio import AsyncIOMainLoop
@@ -17,7 +20,7 @@ from paho.mqtt.client import Client
 import paho.mqtt.client as mqtt
 import peewee_async
 
-from tornado_model import User, WifiDevice, LoraDevice
+from tornado_model import User, LoraDevice, WifiDevice
 
 
 class SendDataToWifi(web.RequestHandler):
@@ -27,10 +30,16 @@ class SendDataToWifi(web.RequestHandler):
             send_data = eval(send_data)
             if isinstance(send_data, dict):
                 global TCP_CONNECTION
-                if send_data['device_name'] in TCP_CONNECTION.keys():
-                    await TCP_CONNECTION[send_data['device_name']].write(bytes(str(send_data), encoding='utf-8'))
+                if send_data['device_name'] + send_data['class'] in TCP_CONNECTION.keys():
+                    await TCP_CONNECTION[send_data['device_name'] + send_data['class']].write(
+                        bytes(str(send_data), encoding='utf-8'))
                     return_data = {'status': 200, 'message': 'success'}
                     self.write(json.dumps(return_data))
+                # elif re.match(r"\w+", send_data['device_name']).group() in TCP_CONNECTION.keys():
+                #     device_name = re.match(r"\w+", send_data['device_name']).group()
+                #     await TCP_CONNECTION[device_name].write(bytes(str(send_data), encoding='utf-8'))
+                #     return_data = {'status': 200, 'message': 'success'}
+                #     self.write(json.dumps(return_data))
                 else:
                     return_data = {'status': 500, 'message': 'failure, 设备TCP未连接'}
                     self.write(json.dumps(return_data))
@@ -39,14 +48,20 @@ class SendDataToWifi(web.RequestHandler):
                 self.write(json.dumps(return_data))
         except Exception as e:
             return_data = {'status': 500, 'message': 'failure, track:{}'.format(e)}
-            self.write(return_data)
+            #
+            # del TCP_CONNECTION[send_data['device_name']]
+            self.write(json.dumps(return_data))
 
 
 class IndexHandler(web.RequestHandler):
     async def get(self):
-        obj = await self.application.objects.get(LoraDevice, device_name='3634374710300059')
-        await self.render("index.html", temperature=obj.data[0:5],
-                          data2=DATA2, humidity=obj.data[5:10], date=obj.date)
+        try:
+            obj = await self.application.objects.create_or_get(LoraDevice, device_name='3634374710300059')
+            await self.render("index.html", temperature=obj.data[0:5],
+                              data2=DATA2, humidity=obj.data[5:10], date=obj.date)
+        except Exception as e:
+            await self.render("index.html", temperature=0,
+                              data2=0, humidity=0, date=0)
 
 
 class GetMqttData(web.RequestHandler):
@@ -67,7 +82,7 @@ class Mqtt(Client):
     def on_message(self, client, userdata, msg):
         global DATA
         DATA = json.loads(msg.payload)
-        print(DATA)
+        # print(DATA)
         if isinstance(DATA, dict):
             DATA = base64.b64decode(DATA['data'])
 
@@ -126,30 +141,150 @@ class TcpHandler(TCPServer):
     global TCP_CONNECTION
 
     async def handle_stream(self, stream, address):
-        global FLAG
+        info_dict = {}
         try:
             while True:
                 msg = await stream.read_bytes(1024, partial=True)
-                FLAG = True
-                # print(msg, 'from', address)
-                msg = eval(msg.decode('utf-8'))
-                TCP_CONNECTION[msg['device_name']] = stream
-                # if msg == 'over':
-                #     stream.close()
-        # except iostream.StreamClosedError:
-        except Exception as e:
-            print(e)
-            FLAG = False
 
-            # pass
+                msg = eval(msg.decode('utf-8'))
+                # print(msg, 'from', address[1])
+                # 判断是否为初次建立连接,发送heartbeat
+                # 用规定的指令设备名和课室创建key
+                msg['port'] = address[1]
+
+                if (msg['device_name'] in info_dict.keys()):  # 判断是否已经连接
+
+                    if (info_dict[msg['device_name']] == msg):  # 判断是否心跳包
+                        # print(info_dict[msg['device_name']])
+                        print('状态相同,心跳包')
+                    else:
+                        # 下发指令或者android更改设备状态返回信息
+                        print('更新操作')
+                        if (msg['device_name'] == 'fan-lamp'):
+                            match_list = re.findall('\w*-\d', str(msg))
+                            print(match_list)
+                            for i in match_list:
+                                update = WifiDevice.update(status=msg[i]). \
+                                    where(
+                                    (WifiDevice.device_number == i) & (WifiDevice.class_number == msg['class']))
+                                update.execute()
+                        elif (msg['device_name'] == 'air'):
+                            if ('degree' in msg.keys()):
+                                update = WifiDevice.update(degree=msg['degree'], ). \
+                                    where(
+                                    (WifiDevice.device_name == msg['device_name']) & (
+                                            WifiDevice.class_number == msg['class']))
+                                update.execute()
+                            elif ('status' in msg.keys()):
+                                update = WifiDevice.update(status=msg['status'], ). \
+                                    where(
+                                    (WifiDevice.device_name == msg['device_name']) & (
+                                            WifiDevice.class_number == msg['class']))
+                                update.execute()
+                            elif ('degree' in msg.keys()):
+                                update = WifiDevice.update(degree=msg['degree'], ). \
+                                    where(
+                                    (WifiDevice.device_name == msg['device_name']) & (
+                                            WifiDevice.class_number == msg['class']))
+                                update.execute()
+                            elif ('gear' in msg.keys()):
+                                update = WifiDevice.update(gear=msg['gear'], ). \
+                                    where(
+                                    (WifiDevice.device_name == msg['device_name']) & (
+                                            WifiDevice.class_number == msg['class']))
+                                update.execute()
+                            elif ('model' in msg.keys()):
+                                update = WifiDevice.update(gear=msg['model'], ). \
+                                    where(
+                                    (WifiDevice.device_name == msg['device_name']) & (
+                                            WifiDevice.class_number == msg['class']))
+                                update.execute()
+                        # 更新info_dict信息
+                        info_dict[msg['device_name']] = msg
+                        # print(info_dict)
+                else:
+                    print('第一次连接')
+                    return_dict = {}
+                    info_dict[msg['device_name']] = msg
+                    TCP_CONNECTION[msg['device_name'] + msg['class']] = stream
+                    # stream.write(bytes(msg, encoding='utf-8'))
+                    print(info_dict)
+                    # if(device_name == 'lamp'):
+                    if ('lamp' and 'fan' in msg.keys()):
+                        print('同时存在')
+                        for i in range(1, int(msg['fan']) + 1):
+                            fan = WifiDevice.get_or_create(device_number='fan-{}'.format(i),
+                                                           class_number=msg['class'],
+                                                           defaults={'device_name': msg['device_name'], 'is_alive': 1,
+                                                                     'port': msg['port']})
+                            return_dict['fan-{}'.format(i)] = fan[0].status
+                        for j in range(1, int(msg['lamp']) + 1):
+                            lamp = WifiDevice.get_or_create(device_number='lamp-{}'.format(j),
+                                                            class_number=msg['class'],
+                                                            defaults={'device_name': msg['device_name'], 'is_alive': 1,
+                                                                      'port': msg['port']})
+                            return_dict['lamp-{}'.format(j)] = lamp[0].status
+                    elif ('fan' in msg.keys()):
+                        print('fan存入数据库操作')
+                        for i in range(1, int(msg['fan']) + 1):
+                            fan = WifiDevice.get_or_create(device_number='fan-{}'.format(i),
+                                                           class_number=msg['class'],
+                                                           defaults={'device_name': msg['device_name'], 'is_alive': 1,
+                                                                     'port': msg['port']})
+                            return_dict['fan-{}'.format(i)] = fan[0].status
+                            print(fan[0].status)
+                            print(msg.keys())
+                    elif ('lamp' in msg.keys()):
+                        print('lamp存入数据库')
+                        for j in range(1, int(msg['lamp']) + 1):
+                            lamp = WifiDevice.get_or_create(device_number='lamp-{}'.format(j),
+                                                            class_number=msg['class'],
+                                                            defaults={'device_name': msg['device_name'], 'is_alive': 1,
+                                                                      'port': msg['port']})
+                            return_dict['lamp-{}'.format(j)] = lamp[0].status
+
+                    elif ('air' in msg.keys()):
+                        print('空调')
+                        for k in msg['air']:
+                            air = WifiDevice.get_or_create(device_name='air-{}'.format(k),
+                                                           class_number=msg['class'],
+                                                           defaults={'device_name': msg['device_name'], 'is_alive': 1,
+                                                                     'port': msg['port']})
+                            return_dict['air-{}'.format(k)] = air[0].status
+                    return_dict['device_name'] = msg['device_name']
+                    return_dict['class'] = msg['class']
+                    # 硬件死机重连返回必要信息
+                    await stream.write(bytes(str(return_dict), encoding='utf-8'))
+                    del return_dict
+                    # 重连修改连接端口号
+                    update = WifiDevice.update(port=msg['port'], is_alive=1).where(
+                        (WifiDevice.device_name == msg['device_name']) & (WifiDevice.class_number == msg['class']))
+                    update.execute()
+        except StreamClosedError:
+            # 掉线处理
+            for value in info_dict.values():
+                # value = eval(value)
+                if (address[1] in value.values()):
+                    # print(value['device_name'], value['class'])
+                    # wifi设备掉线,数据更改数据库设备状态
+                    update = WifiDevice.update(is_alive=0).where(WifiDevice.port == address[1])
+                    update.execute()
+                    # print(value.values())
+            # wifi tcp断开后会出错, 根据address查询数据库并修改状态
+            print('设备掉线处理')
+            # print("TcpHandler---------{}".format(e))
 
 
 async def heartbeat():
-    if FLAG is True:
-        for i in TCP_CONNECTION.values():
-            await i.write(b'heartBeat')
-    else:
-        print('tcp心跳包-----{}'.format(datetime.now()))
+    try:
+        for key, value in TCP_CONNECTION.items():
+            print('{}发送心跳包'.format(key))
+            await value.write(b"{'heartBeat'}")
+            # await i.write(b"heartBeat")
+    except Exception as e:
+        TCP_CONNECTION.pop(key)
+
+        print('出错设备号{},错误信息{}'.format(key, e))
 
 
 def send_mqtt(data):
@@ -194,7 +329,7 @@ FLAG = False
 database = peewee_async.PooledMySQLDatabase('tornado_db',
                                             **{'charset': 'utf8', 'use_unicode': True, 'host': 'localhost',
                                                'port': 3306, 'user': 'tornado_user', 'password': 'ciel2019'})
-define("port", default=9999, help="run on the given port", type=int)
+define("port", default=9004, help="run on the given port", type=int)
 settings = {'debug': True, 'template_path': 'templates', 'static_path': "static", "xsrf_cookies": True}
 AsyncIOMainLoop().install()
 app = web.Application(
