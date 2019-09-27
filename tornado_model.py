@@ -71,7 +71,8 @@ class LoraDevice(BaseModel):
 
 def create_tables():
     with database:
-        database.create_tables([User, WifiDevice])
+        # database.create_tables([User, WifiDevice])
+        database.create_tables([LoraDevice])
 
 
 if __name__ == '__main__':

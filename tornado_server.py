@@ -53,15 +53,221 @@ class SendDataToWifi(web.RequestHandler):
             self.write(json.dumps(return_data))
 
 
+class Test(web.RequestHandler):
+    async def post(self):
+        # global TCP_CONNECTION
+        # data = self.get_arguments("data")
+        offlamp = self.get_arguments("off-lamp")
+        off1 = self.get_arguments("off-fan-1")
+        off2 = self.get_arguments("off-fan-2")
+        off3 = self.get_arguments("off-fan-3")
+
+        on = self.get_arguments("on-lamp")
+        on1 = self.get_arguments("on-fan-1")
+        on2 = self.get_arguments("on-fan-2")
+        on3 = self.get_arguments("on-fan-3")
+        if (offlamp):
+            send_data = '''{'device_name': 'fan-lamp', 'class': 'G406', 'lamp-1': '0', 'lamp-2': '0','lamp-3': '0'}'''
+            try:
+                send_data = eval(send_data)
+                if isinstance(send_data, dict):
+                    if send_data['device_name'] + send_data['class'] in TCP_CONNECTION.keys():
+                        await TCP_CONNECTION[send_data['device_name'] + send_data['class']].write(
+                            bytes(str(send_data), encoding='utf-8'))
+                        return_data = {'status': 200, 'message': 'success'}
+                        self.write(json.dumps(return_data))
+                    else:
+                        return_data = {'status': 500, 'message': 'failure, 设备TCP未连接'}
+                        self.write(json.dumps(return_data))
+                else:
+                    return_data = {'status': 500, 'message': 'failure, 命令有误'}
+                    self.write(json.dumps(return_data))
+            except Exception as e:
+                return_data = {'status': 500, 'message': 'failure, track:{}'.format(e)}
+                #
+                # del TCP_CONNECTION[send_data['device_name']]
+                self.write(json.dumps(return_data))
+        elif (off1):
+            send_data = '''{'device_name': 'fan-lamp', 'class': 'G406', 'fan-1': '0'}'''
+            try:
+                send_data = eval(send_data)
+                if isinstance(send_data, dict):
+                    if send_data['device_name'] + send_data['class'] in TCP_CONNECTION.keys():
+                        await TCP_CONNECTION[send_data['device_name'] + send_data['class']].write(
+                            bytes(str(send_data), encoding='utf-8'))
+                        return_data = {'status': 200, 'message': 'success'}
+                        self.write(json.dumps(return_data))
+                    else:
+                        return_data = {'status': 500, 'message': 'failure, 设备TCP未连接'}
+                        self.write(json.dumps(return_data))
+                else:
+                    return_data = {'status': 500, 'message': 'failure, 命令有误'}
+                    self.write(json.dumps(return_data))
+            except Exception as e:
+                return_data = {'status': 500, 'message': 'failure, track:{}'.format(e)}
+                #
+                # del TCP_CONNECTION[send_data['device_name']]
+                self.write(json.dumps(return_data))
+        elif (off2):
+            send_data = '''{'device_name': 'fan-lamp', 'class': 'G406', 'fan-2': '0'}'''
+            try:
+                send_data = eval(send_data)
+                if isinstance(send_data, dict):
+                    if send_data['device_name'] + send_data['class'] in TCP_CONNECTION.keys():
+                        await TCP_CONNECTION[send_data['device_name'] + send_data['class']].write(
+                            bytes(str(send_data), encoding='utf-8'))
+                        return_data = {'status': 200, 'message': 'success'}
+                        self.write(json.dumps(return_data))
+                    else:
+                        return_data = {'status': 500, 'message': 'failure, 设备TCP未连接'}
+                        self.write(json.dumps(return_data))
+                else:
+                    return_data = {'status': 500, 'message': 'failure, 命令有误'}
+                    self.write(json.dumps(return_data))
+            except Exception as e:
+                return_data = {'status': 500, 'message': 'failure, track:{}'.format(e)}
+                #
+                # del TCP_CONNECTION[send_data['device_name']]
+                self.write(json.dumps(return_data))
+        elif (off3):
+            send_data = '''{'device_name': 'fan-lamp', 'class': 'G406', 'fan-3': '0'}'''
+            try:
+                send_data = eval(send_data)
+                if isinstance(send_data, dict):
+                    if send_data['device_name'] + send_data['class'] in TCP_CONNECTION.keys():
+                        await TCP_CONNECTION[send_data['device_name'] + send_data['class']].write(
+                            bytes(str(send_data), encoding='utf-8'))
+                        return_data = {'status': 200, 'message': 'success'}
+                        self.write(json.dumps(return_data))
+                    else:
+                        return_data = {'status': 500, 'message': 'failure, 设备TCP未连接'}
+                        self.write(json.dumps(return_data))
+                else:
+                    return_data = {'status': 500, 'message': 'failure, 命令有误'}
+                    self.write(json.dumps(return_data))
+            except Exception as e:
+                return_data = {'status': 500, 'message': 'failure, track:{}'.format(e)}
+                #
+                # del TCP_CONNECTION[send_data['device_name']]
+                self.write(json.dumps(return_data))
+        elif (on):
+            send_data = '''{'device_name': 'fan-lamp', 'class': 'G406', 'lamp-1': '1', 'lamp-2': '1','lamp-3': '1'}'''
+            try:
+                send_data = eval(send_data)
+                if isinstance(send_data, dict):
+                    if send_data['device_name'] + send_data['class'] in TCP_CONNECTION.keys():
+                        await TCP_CONNECTION[send_data['device_name'] + send_data['class']].write(
+                            bytes(str(send_data), encoding='utf-8'))
+                        return_data = {'status': 200, 'message': 'success'}
+                        self.write(json.dumps(return_data))
+                    else:
+                        return_data = {'status': 500, 'message': 'failure, 设备TCP未连接'}
+                        self.write(json.dumps(return_data))
+                else:
+                    return_data = {'status': 500, 'message': 'failure, 命令有误'}
+                    self.write(json.dumps(return_data))
+            except Exception as e:
+                return_data = {'status': 500, 'message': 'failure, track:{}'.format(e)}
+                #
+                # del TCP_CONNECTION[send_data['device_name']]
+                self.write(json.dumps(return_data))
+        elif (on1):
+            send_data = '''{'device_name': 'fan-lamp', 'class': 'G406', 'fan-1': '2'}'''
+            try:
+                send_data = eval(send_data)
+                if isinstance(send_data, dict):
+                    if send_data['device_name'] + send_data['class'] in TCP_CONNECTION.keys():
+                        await TCP_CONNECTION[send_data['device_name'] + send_data['class']].write(
+                            bytes(str(send_data), encoding='utf-8'))
+                        return_data = {'status': 200, 'message': 'success'}
+                        self.write(json.dumps(return_data))
+                    else:
+                        return_data = {'status': 500, 'message': 'failure, 设备TCP未连接'}
+                        self.write(json.dumps(return_data))
+                else:
+                    return_data = {'status': 500, 'message': 'failure, 命令有误'}
+                    self.write(json.dumps(return_data))
+            except Exception as e:
+                return_data = {'status': 500, 'message': 'failure, track:{}'.format(e)}
+                #
+                # del TCP_CONNECTION[send_data['device_name']]
+                self.write(json.dumps(return_data))
+        elif (on2):
+            send_data = '''{'device_name': 'fan-lamp', 'class': 'G406', 'fan-2': '2'}'''
+            try:
+                send_data = eval(send_data)
+                if isinstance(send_data, dict):
+                    if send_data['device_name'] + send_data['class'] in TCP_CONNECTION.keys():
+                        await TCP_CONNECTION[send_data['device_name'] + send_data['class']].write(
+                            bytes(str(send_data), encoding='utf-8'))
+                        return_data = {'status': 200, 'message': 'success'}
+                        self.write(json.dumps(return_data))
+                    else:
+                        return_data = {'status': 500, 'message': 'failure, 设备TCP未连接'}
+                        self.write(json.dumps(return_data))
+                else:
+                    return_data = {'status': 500, 'message': 'failure, 命令有误'}
+                    self.write(json.dumps(return_data))
+            except Exception as e:
+                return_data = {'status': 500, 'message': 'failure, track:{}'.format(e)}
+                #
+                # del TCP_CONNECTION[send_data['device_name']]
+                self.write(json.dumps(return_data))
+        elif (on3):
+            send_data = '''{'device_name': 'fan-lamp', 'class': 'G406', 'fan-3': '2'}'''
+            try:
+                send_data = eval(send_data)
+                if isinstance(send_data, dict):
+                    if send_data['device_name'] + send_data['class'] in TCP_CONNECTION.keys():
+                        await TCP_CONNECTION[send_data['device_name'] + send_data['class']].write(
+                            bytes(str(send_data), encoding='utf-8'))
+                        return_data = {'status': 200, 'message': 'success'}
+                        self.write(json.dumps(return_data))
+                    else:
+                        return_data = {'status': 500, 'message': 'failure, 设备TCP未连接'}
+                        self.write(json.dumps(return_data))
+                else:
+                    return_data = {'status': 500, 'message': 'failure, 命令有误'}
+                    self.write(json.dumps(return_data))
+            except Exception as e:
+                return_data = {'status': 500, 'message': 'failure, track:{}'.format(e)}
+                #
+                # del TCP_CONNECTION[send_data['device_name']]
+                self.write(json.dumps(return_data))
+        # self.write({'status':200, 'message':'success'})
+
+
 class IndexHandler(web.RequestHandler):
     async def get(self):
+        if database.is_closed():
+            database.connect()
         try:
+            # self.prepare()
             obj = await self.application.objects.create_or_get(LoraDevice, device_name='3634374710300059')
+            devices = WifiDevice.select()
+            # device_status = await self.application.objects.count(WifiDevice, device_name='fan-lamp')
+            # print(device_status)
+            # for i in device_status:
+            #     print(i)
+            # if(obj.data):
             await self.render("index.html", temperature=obj.data[0:5],
-                              data2=DATA2, humidity=obj.data[5:10], date=obj.date)
+                              data2=DATA2, humidity=obj.data[5:10], date=obj.date, device_status=devices)
+            await self.on_finish()
+            # else:
+            #     await self.render("index.html", temperature=0, data2=0, humidity=0, date=0, device_status=device_status)
         except Exception as e:
             await self.render("index.html", temperature=0,
-                              data2=0, humidity=0, date=0)
+                              data2=0, humidity=0, date=0, devices=devices)
+            await self.on_finish()
+
+    def prepare(self):
+        database.connect(reuse_if_open=True)
+        return super(IndexHandler, self).prepare()
+
+    def on_finish(self):
+        if not database.is_closed():
+            database.close()
+        return super(IndexHandler, self).on_finish()
 
 
 class GetMqttData(web.RequestHandler):
@@ -162,7 +368,8 @@ class TcpHandler(TCPServer):
                         print('更新操作')
                         if (msg['device_name'] == 'fan-lamp'):
                             match_list = re.findall('\w*-\d', str(msg))
-                            print(match_list)
+                            print('回复指令', msg)
+                            # print('re匹配字符串',match_list)
                             for i in match_list:
                                 update = WifiDevice.update(status=msg[i]). \
                                     where(
@@ -208,7 +415,7 @@ class TcpHandler(TCPServer):
                     info_dict[msg['device_name']] = msg
                     TCP_CONNECTION[msg['device_name'] + msg['class']] = stream
                     # stream.write(bytes(msg, encoding='utf-8'))
-                    print(info_dict)
+                    # print(info_dict)
                     # if(device_name == 'lamp'):
                     if ('lamp' and 'fan' in msg.keys()):
                         print('同时存在')
@@ -254,13 +461,14 @@ class TcpHandler(TCPServer):
                     return_dict['device_name'] = msg['device_name']
                     return_dict['class'] = msg['class']
                     # 硬件死机重连返回必要信息
+                    print('return_dict{}-----------------------'.format(return_dict))
                     await stream.write(bytes(str(return_dict), encoding='utf-8'))
                     del return_dict
                     # 重连修改连接端口号
                     update = WifiDevice.update(port=msg['port'], is_alive=1).where(
                         (WifiDevice.device_name == msg['device_name']) & (WifiDevice.class_number == msg['class']))
                     update.execute()
-        except StreamClosedError:
+        except StreamClosedError as e:
             # 掉线处理
             for value in info_dict.values():
                 # value = eval(value)
@@ -271,7 +479,7 @@ class TcpHandler(TCPServer):
                     update.execute()
                     # print(value.values())
             # wifi tcp断开后会出错, 根据address查询数据库并修改状态
-            print('设备掉线处理')
+            print('设备掉线处理,错误信息{}'.format(e))
             # print("TcpHandler---------{}".format(e))
 
 
@@ -326,9 +534,11 @@ def save_mqtt_data():
 
 TCP_CONNECTION = {}
 FLAG = False
-database = peewee_async.PooledMySQLDatabase('tornado_db',
-                                            **{'charset': 'utf8', 'use_unicode': True, 'host': 'localhost',
-                                               'port': 3306, 'user': 'tornado_user', 'password': 'ciel2019'})
+database = peewee_async.MySQLDatabase('tornado_db',
+                                      **{'charset': 'utf8', 'use_unicode': True, 'host': 'localhost',
+                                         'port': 3306, 'user': 'tornado_user', 'password': 'ciel2019'})
+# database.set_allow_sync(False)
+
 define("port", default=9004, help="run on the given port", type=int)
 settings = {'debug': True, 'template_path': 'templates', 'static_path': "static", "xsrf_cookies": True}
 AsyncIOMainLoop().install()
@@ -338,7 +548,8 @@ app = web.Application(
         (r"/mqtt", GetMqttData),
         # (r"/api/users/", GetAllUserHandler),
         (r"/user", GetUserHandler),
-        (r"/", IndexHandler)
+        (r"/", IndexHandler),
+        (r"/test", Test)
     ],
     **settings
 )
