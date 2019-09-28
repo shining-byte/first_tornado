@@ -67,7 +67,7 @@ class Test(web.RequestHandler):
         on2 = self.get_arguments("on-fan-2")
         on3 = self.get_arguments("on-fan-3")
         if (offlamp):
-            send_data = '''{'device_name': 'fan-lamp', 'class': 'G406', 'lamp-1': '0', 'lamp-2': '0','lamp-3': '0'}'''
+            send_data = '''{'device_name': 'fan-lamp-curtain', 'class': 'G406', 'lamp-1': '0', 'lamp-2': '0','lamp-3': '0'}'''
             try:
                 send_data = eval(send_data)
                 if isinstance(send_data, dict):
@@ -88,7 +88,7 @@ class Test(web.RequestHandler):
                 # del TCP_CONNECTION[send_data['device_name']]
                 self.write(json.dumps(return_data))
         elif (off1):
-            send_data = '''{'device_name': 'fan-lamp', 'class': 'G406', 'fan-1': '0'}'''
+            send_data = '''{'device_name': 'fan-lamp-curtain', 'class': 'G406', 'fan-1': '0'}'''
             try:
                 send_data = eval(send_data)
                 if isinstance(send_data, dict):
@@ -109,7 +109,7 @@ class Test(web.RequestHandler):
                 # del TCP_CONNECTION[send_data['device_name']]
                 self.write(json.dumps(return_data))
         elif (off2):
-            send_data = '''{'device_name': 'fan-lamp', 'class': 'G406', 'fan-2': '0'}'''
+            send_data = '''{'device_name': 'fan-lamp-curtain', 'class': 'G406', 'fan-2': '0'}'''
             try:
                 send_data = eval(send_data)
                 if isinstance(send_data, dict):
@@ -130,7 +130,7 @@ class Test(web.RequestHandler):
                 # del TCP_CONNECTION[send_data['device_name']]
                 self.write(json.dumps(return_data))
         elif (off3):
-            send_data = '''{'device_name': 'fan-lamp', 'class': 'G406', 'fan-3': '0'}'''
+            send_data = '''{'device_name': 'fan-lamp-curtain', 'class': 'G406', 'fan-3': '0'}'''
             try:
                 send_data = eval(send_data)
                 if isinstance(send_data, dict):
@@ -151,7 +151,7 @@ class Test(web.RequestHandler):
                 # del TCP_CONNECTION[send_data['device_name']]
                 self.write(json.dumps(return_data))
         elif (on):
-            send_data = '''{'device_name': 'fan-lamp', 'class': 'G406', 'lamp-1': '1', 'lamp-2': '1','lamp-3': '1'}'''
+            send_data = '''{'device_name': 'fan-lamp-curtain', 'class': 'G406', 'lamp-1': '1', 'lamp-2': '1','lamp-3': '1'}'''
             try:
                 send_data = eval(send_data)
                 if isinstance(send_data, dict):
@@ -172,7 +172,7 @@ class Test(web.RequestHandler):
                 # del TCP_CONNECTION[send_data['device_name']]
                 self.write(json.dumps(return_data))
         elif (on1):
-            send_data = '''{'device_name': 'fan-lamp', 'class': 'G406', 'fan-1': '2'}'''
+            send_data = '''{'device_name': 'fan-lamp-curtain', 'class': 'G406', 'fan-1': '2'}'''
             try:
                 send_data = eval(send_data)
                 if isinstance(send_data, dict):
@@ -193,7 +193,7 @@ class Test(web.RequestHandler):
                 # del TCP_CONNECTION[send_data['device_name']]
                 self.write(json.dumps(return_data))
         elif (on2):
-            send_data = '''{'device_name': 'fan-lamp', 'class': 'G406', 'fan-2': '2'}'''
+            send_data = '''{'device_name': 'fan-lamp-curtain', 'class': 'G406', 'fan-2': '2'}'''
             try:
                 send_data = eval(send_data)
                 if isinstance(send_data, dict):
@@ -214,7 +214,7 @@ class Test(web.RequestHandler):
                 # del TCP_CONNECTION[send_data['device_name']]
                 self.write(json.dumps(return_data))
         elif (on3):
-            send_data = '''{'device_name': 'fan-lamp', 'class': 'G406', 'fan-3': '2'}'''
+            send_data = '''{'device_name': 'fan-lamp-curtain', 'class': 'G406', 'fan-3': '2'}'''
             try:
                 send_data = eval(send_data)
                 if isinstance(send_data, dict):
@@ -243,15 +243,12 @@ class IndexHandler(web.RequestHandler):
             database.connect()
         try:
             # self.prepare()
-            obj = await self.application.objects.create_or_get(LoraDevice, device_name='3634374710300059')
+            # obj = await self.application.objects.create_or_get(LoraDevice, device_name='3634374710300059')
             devices = WifiDevice.select()
-            # device_status = await self.application.objects.count(WifiDevice, device_name='fan-lamp')
-            # print(device_status)
-            # for i in device_status:
-            #     print(i)
-            # if(obj.data):
-            await self.render("index.html", temperature=obj.data[0:5],
-                              data2=DATA2, humidity=obj.data[5:10], date=obj.date, device_status=devices)
+            await self.render("index.html", temperature=0,
+                              data2=0, humidity=0, date=0, devices=devices)
+            # await self.render("index.html", temperature=obj.data[0:5],
+            #                   data2=DATA2, humidity=obj.data[5:10], date=obj.date, device_status=devices)
             await self.on_finish()
             # else:
             #     await self.render("index.html", temperature=0, data2=0, humidity=0, date=0, device_status=device_status)
@@ -366,7 +363,7 @@ class TcpHandler(TCPServer):
                     else:
                         # 下发指令或者android更改设备状态返回信息
                         print('更新操作')
-                        if (msg['device_name'] == 'fan-lamp'):
+                        if (msg['device_name'] == 'fan-lamp-curtain'):
                             match_list = re.findall('\w*-\d', str(msg))
                             print('回复指令', msg)
                             # print('re匹配字符串',match_list)
@@ -417,7 +414,7 @@ class TcpHandler(TCPServer):
                     # stream.write(bytes(msg, encoding='utf-8'))
                     # print(info_dict)
                     # if(device_name == 'lamp'):
-                    if ('lamp' and 'fan' in msg.keys()):
+                    if ('lamp' and 'fan' and 'curtain' in msg.keys()):
                         print('同时存在')
                         for i in range(1, int(msg['fan']) + 1):
                             fan = WifiDevice.get_or_create(device_number='fan-{}'.format(i),
@@ -431,6 +428,13 @@ class TcpHandler(TCPServer):
                                                             defaults={'device_name': msg['device_name'], 'is_alive': 1,
                                                                       'port': msg['port']})
                             return_dict['lamp-{}'.format(j)] = lamp[0].status
+                        for k in range(1, int(msg['curtain']) + 1):
+                            curtain = WifiDevice.get_or_create(device_number='curtain-{}'.format(k),
+                                                               class_number=msg['class'],
+                                                               defaults={'device_name': msg['device_name'],
+                                                                         'is_alive': 1,
+                                                                         'port': msg['port']})
+                            return_dict['curtain-{}'.format(k)] = curtain[0].status
                     elif ('fan' in msg.keys()):
                         print('fan存入数据库操作')
                         for i in range(1, int(msg['fan']) + 1):
