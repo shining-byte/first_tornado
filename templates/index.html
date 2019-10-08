@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Burt's Books – Book Detail</title>
+        <title>CIEL云计算实验室</title>
         <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
         <script src="{{ static_url('inventory.js') }}"
             type="application/javascript"></script>
@@ -8,10 +8,10 @@
 
     <body>
         <div>
-            <h1>Lora's Server</h1>
+            <h1>CIEL云计算实验室</h1>
 
             <hr/>
-            <p><h2>59设备{{ date }}上传数据：温度：{{ temperature }}, 湿度：{{ humidity }}</h2>
+            <p><h2>59设备(5分钟保存一次) {{ date }}上传数据：温度：{{ temperature }}, 湿度：{{ humidity }}</h2>
             <em>设备2e上传数据：{{ data2 }}</em></p>
         </div>
 
@@ -36,11 +36,39 @@
             <p>
 <!--            <form>-->
             发送指令格式
-                <input type="text" id="wifi_data" value="{'device_name': 'fan-01', 'status': 'on', 'degree': '25', 'gear': '3', 'model': 'cold'}" size="150">
+                <input type="text" id="wifi_data" value="{'device_name': 'fan-lamp-curtain', 'class': 'G406', 'fan-1': '0','fan-2': '0','fan-3': '0', 'lamp-1': '0', 'lamp-2': '0','lamp-3': '0', 'curtain-1': '0', 'curtain-2': '0'}" size="150">
 <!--        </form>-->
             </p>
             <p><input type="submit" value="测试wifi设备" id="send-button" /></p>
         </div>
+        <p>
+            <h2>当前设备状态</h2>
+        <form method="post" action="test" name="data">
+            {% raw xsrf_form_html() %}
+            <input type="submit" value="开所有灯" id="on-lamp" name="on-lamp" />
+        <input type="submit" value="开1号风扇" id="on-fan-1" name="on-fan-1" />
+        <input type="submit" value="开2号风扇" id="on-fan-2" name="on-fan-2" />
+        <input type="submit" value="开3号风扇" id="on-fan-3" name="on-fan-3" />
+            <p>
+        <input type="submit" value="关所有灯" id="off-lamp" name="off-lamp" />
+        <input type="submit" value="关1号风扇" id="off-fan-1" name="off-fan-1" />
+        <input type="submit" value="关2号风扇" id="off-fan-2" name="off-fan-2" />
+        <input type="submit" value="关3号风扇" id="off-fan-3" name="off-fan-3" />
+            <p>
+            <input type="submit" value="开1号窗帘" id="on-curtain-1" name="on-curtain-1" />
+            <input type="submit" value="暂停1号窗帘" id="stop-curtain-1" name="stop-curtain-1" />
+            <input type="submit" value="关1号窗帘" id="of-curtain-1" name="off-curtain-1" />
+            </form>
+        <ol>
+            {% for device in  devices  %}
+                {% if device.device_name == 'fan-lamp-curtain' %}
+                <li> {{ device.device_number }}教室编号:{{ device.class_number }},状态:{{ device.status }},是否在线:{{ device.is_alive }}</li>
+                {% else %}
+                <li> {{ device.device_name }}教室编号:{{ device.class_number }},温度:{{ device.degree }}, 挡位：{{ device.gear }},模式： {{ device.model }}, 状态：{{ device.status }},  是否在线:{{ device.is_alive }}</li>
+                {% end %}
+            {% end %}
+        </ol>
+
 <!--        <div id="remove-from-cart" style="display: none;">-->
 <!--            <p><span style="color: green;">One copy is in your cart.</span></p>-->
 <!--            <p><input type="submit" value="Remove from Cart" id="remove-button" /></p>-->
