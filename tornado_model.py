@@ -22,7 +22,7 @@ class User(BaseModel):
 
 
 class WifiDevice(BaseModel):
-    device_name = CharField(verbose_name='设备名', max_length=30)
+    device_name = CharField(verbose_name='设备名', max_length=10)
     class_number = CharField(default=0, verbose_name='教室编号', max_length=10)
     device_number = CharField(verbose_name='设备编号', max_length=10, default=0)
     status = IntegerField(default=0, verbose_name='开关状态')
@@ -69,19 +69,9 @@ class LoraDevice(BaseModel):
     port = IntegerField(default=0, verbose_name='连接端口')
 
 
-class RandomCode(BaseModel):
-    client_id = CharField(max_length=30, verbose_name='注册id', unique=True)
-    client_secret = CharField(max_length=30, verbose_name='注册secret')
-    code = CharField(max_length=50, verbose_name='随机code')
-    access_token = CharField(max_length=50, verbose_name='access_token')
-    refresh_token = CharField(max_length=50, verbose_name='refresh_token')
-    date = DateTimeField(default=datetime.now(), verbose_name='记录时间')
-
-
 def create_tables():
     with database:
-        # database.create_tables([User, WifiDevice])
-        database.create_tables([WifiDevice])
+        database.create_tables([User, WifiDevice])
 
 
 if __name__ == '__main__':
